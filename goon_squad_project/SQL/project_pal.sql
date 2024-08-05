@@ -9,16 +9,22 @@ CREATE TABLE student(
     name VARCHAR(75),
     on_campus BOOLEAN,
     email VARCHAR(75),
-    speciality VARCHAR(75),
+    speciality VARCHAR(75), # -- connects to a seperate table! 
     year INT,
     first_name VARCHAR(75),
     last_name VARCHAR(75),
-    time TIME,
+    time TIME, -- changed this to the availability table! 
     days DATE,
 
     -- Create Keys
     PRIMARY KEY (student_id)
 );
+
+-- specialty table 
+CREATE TABLE specialty(
+    -- need to add in! 
+);
+
 
 -- All attributes related to TA's
 CREATE TABLE TA(
