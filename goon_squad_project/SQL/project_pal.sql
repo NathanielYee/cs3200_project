@@ -66,6 +66,8 @@ CREATE TABLE 'group'(
 );
 
 CREATE TABLE submission(
-    date DATE
-
+    group_id INT,
+    submission_id INT,
+    submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (submission_id)
 );
