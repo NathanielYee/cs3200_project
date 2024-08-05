@@ -57,7 +57,7 @@ CREATE TABLE class(
     PRIMARY KEY (CRN)
 );
 
-CREATE TABLE 'group'(
+CREATE TABLE group(
     group_name VARCHAR(75),
     group_number INT,
 
