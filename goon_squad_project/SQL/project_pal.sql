@@ -11,54 +11,61 @@ CREATE TABLE student(
     email VARCHAR(75),
     speciality VARCHAR(75),
     year INT,
+    first_name VARCHAR(75),
+    last_name VARCHAR(75),
+    time TIME,
+    days DATE,
 
     -- Create Keys
     PRIMARY KEY (student_id)
-              );
-
-CREATE TABLE name(
-    first_name VARCHAR(75),
-    last_name VARCHAR(75)
-);
-
-CREATE TABLE availability(
-    time TIME,
-    days DATE
 );
 
 -- All attributes related to TA's
-
 CREATE TABLE TA(
     ta_id INT AUTO_INCREMENT,
-    email VARCHAR(75)
-
-);
-
-CREATE TABLE name(
+    email VARCHAR(75),
     first_name VARCHAR(75),
-    last_name VARCHAR(75)
+    last_name VARCHAR(75),
+    time TIME,
+    days DATE,
+    PRIMARY KEY (ta_id)
 );
 
-CREATE TABLE availability(
-    time TIME,
-    days DATE
-);
 
 -- All attributes and entities for Professors
-
 CREATE TABLE professors(
     faculty_id INT AUTO_INCREMENT,
-    email VARCHAR(75)
+    email VARCHAR(75),
+    first_name VARCHAR(75),
+    last_name VARCHAR(75),
+    -- ASSIGN KEYS
+    PRIMARY KEY (faculty_id)
 );
 
+-- Create other Entities
 CREATE TABLE department(
+    dept_id INT,
     deptName VARCHAR(75),
-    dept_id INT
+    PRIMARY KEY (dept_id)
 );
 
 CREATE TABLE class(
     CRN INT,
     time TIME,
     course_name VARCHAR(75),
-    dept_name VARCHAR(75)
-)
+    dept_name VARCHAR(75),
+    PRIMARY KEY (CRN)
+);
+
+CREATE TABLE 'group'(
+    group_name VARCHAR(75),
+    group_number INT,
+
+    -- Create Keys
+    PRIMARY KEY (group_number)
+);
+
+CREATE TABLE submission(
+    date DATE
+
+);
