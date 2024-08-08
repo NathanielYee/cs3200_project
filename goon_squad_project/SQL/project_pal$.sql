@@ -25,28 +25,25 @@ CREATE TABLE IF NOT EXISTS Professor (
 
 -- Class Table
 CREATE TABLE IF NOT EXISTS Class (
-    course_name VARCHAR(55),
     course_id INT AUTO_INCREMENT,
+    course_name VARCHAR(55),
     dept_id INT,
-    professor_id INT,
     FOREIGN KEY (dept_id) REFERENCES Department(dept_id)
         ON UPDATE restrict ON DELETE restrict,
-    FOREIGN KEY (professor_id) REFERENCES Professor(professor_id)
-                                 ON UPDATE restrict ON DELETE restrict,
     PRIMARY KEY (course_id)
 );
 
--- Section Table
+-- Section Table (Weak Entity to Class)
 CREATE TABLE IF NOT EXISTS Section (
-    course_id INT NOT NULL ,
-    semester_year VARCHAR(25) NOT NULL ,
     section_num INT NOT NULL,
+    semester_year VARCHAR(25) NOT NULL,
+    course_id INT NOT NULL,
     professor_id INT,
     FOREIGN KEY (course_id) REFERENCES Class(course_id)
                                    ON UPDATE restrict ON DELETE restrict,
     FOREIGN KEY (professor_id) REFERENCES Professor(professor_id)
                                    ON UPDATE restrict ON DELETE restrict,
-    PRIMARY KEY (course_id, semester_year, section_num),
+    PRIMARY KEY (section_num, semester_year, course_id),
     UNIQUE (course_id, semester_year, section_num)
 );
 
@@ -74,7 +71,7 @@ CREATE TABLE IF NOT EXISTS TA (
     PRIMARY KEY (ta_id)
 );
 
--- TA Speciality Table
+-- TA Speciality Table (Multivalued Attribute)
 CREATE TABLE IF NOT EXISTS TASpeciality (
     ta_id INT PRIMARY KEY,
     speciality_description VARCHAR(255),
@@ -96,7 +93,7 @@ CREATE TABLE IF NOT EXISTS `Group` (
     PRIMARY KEY (group_id)
 );
 
--- Submission Table
+-- Submission Table (Weak Entity to Group)
 CREATE TABLE IF NOT EXISTS Submission (
     submission_id INT AUTO_INCREMENT,
     group_id INT,
@@ -104,7 +101,7 @@ CREATE TABLE IF NOT EXISTS Submission (
     submission_link VARCHAR(100),
     project_id INT NOT NULL,
     FOREIGN KEY (project_id) REFERENCES Project(project_id)
-                                      ON UPDATE restrict ON DELETE restrict,
+        ON UPDATE restrict ON DELETE restrict,
     PRIMARY KEY (submission_id, group_id)
 );
 
@@ -118,27 +115,31 @@ CREATE TABLE IF NOT EXISTS Student (
     year INT,
     on_campus BOOLEAN,
     group_id INT,
-    FOREIGN KEY (group_id) REFERENCES `Group`(group_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
+    FOREIGN KEY (group_id) REFERENCES `Group`(group_id)
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
     PRIMARY KEY (student_id)
 );
 
--- Student Speciality Table
+-- Student Speciality Table (Multivalued Attribute)
 CREATE TABLE IF NOT EXISTS StudentSpeciality (
     student_id INT PRIMARY KEY,
     speciality_description VARCHAR(255),
-    FOREIGN KEY (student_id) REFERENCES Student(student_id) ON UPDATE restrict ON DELETE restrict
+    FOREIGN KEY (student_id) REFERENCES Student(student_id)
+        ON UPDATE restrict ON DELETE restrict
 );
 
--- StudentSection Table
+-- StudentSection Table (Bridge Table)
 CREATE TABLE IF NOT EXISTS StudentSection (
     student_id INT,
     course_id INT,
     semester_year VARCHAR(25),
     section_num INT,
     FOREIGN KEY (course_id, semester_year, section_num)
-        REFERENCES Section(course_id, semester_year, section_num),
+        REFERENCES Section(course_id, semester_year, section_num)
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
     FOREIGN KEY (student_id)
-        REFERENCES Student(student_id),
+        REFERENCES Student(student_id)
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
     PRIMARY KEY (student_id, course_id, semester_year, section_num)
 );
 
@@ -167,25 +168,30 @@ CREATE TABLE IF NOT EXISTS Availability (
     location_id INT,
     day_id INT NOT NULL,
     time_id INT,
-    FOREIGN KEY (location_id) REFERENCES Location(location_id) ON UPDATE restrict ON DELETE restrict,
-    FOREIGN KEY (day_id) REFERENCES Days(day_id) ON UPDATE restrict ON DELETE restrict,
-    FOREIGN KEY (time_id) REFERENCES Time(time_id) ON UPDATE restrict ON DELETE restrict,
+    FOREIGN KEY (location_id) REFERENCES Location(location_id)
+        ON UPDATE restrict ON DELETE restrict,
+    FOREIGN KEY (day_id) REFERENCES Days(day_id)
+        ON UPDATE restrict ON DELETE restrict,
+    FOREIGN KEY (time_id) REFERENCES Time(time_id)
+        ON UPDATE restrict ON DELETE restrict,
     PRIMARY KEY (availability_id)
 );
 
--- StudentAvailability Table
+-- StudentAvailability Table (Bridge Table)
 CREATE TABLE IF NOT EXISTS StudentAvailability (
     availability_id INT NOT NULL,
     student_id INT NOT NULL,
-    FOREIGN KEY (student_id) REFERENCES Student(student_id) ON UPDATE restrict ON DELETE restrict,
+    FOREIGN KEY (student_id) REFERENCES Student(student_id)
+        ON UPDATE restrict ON DELETE restrict,
     PRIMARY KEY (availability_id, student_id)
 );
 
--- TA Table
+-- TAAvailability Table (Bridge Table)
 CREATE TABLE IF NOT EXISTS TAAvailability (
     availability_id INT NOT NULL,
     ta_id INT NOT NULL,
-    FOREIGN KEY (ta_id) REFERENCES TA(ta_id) ON UPDATE restrict ON DELETE restrict,
+    FOREIGN KEY (ta_id) REFERENCES TA(ta_id)
+        ON UPDATE restrict ON DELETE restrict,
     PRIMARY KEY (availability_id, ta_id)
 );
 
@@ -204,10 +210,10 @@ VALUES ('Mark', 'Fontenot', 'm.fontenot@northeastern.edu', 1, 'WVH 115'),
        ('Matt', 'James', 'm.james@northestern.edu', 3, 'Churchill 102');
 
 -- Class Data
-INSERT INTO Class(course_name, dept_id, professor_id)
-VALUES ('Database Design', 1, 1),
-       ('Organic Chemistry', 3, 3),
-       ('Investments', 2, 2);
+INSERT INTO Class(course_name, dept_id)
+VALUES ('Database Design', 1),
+       ('Organic Chemistry', 3),
+       ('Investments', 2);
 
 -- Section Data
 INSERT INTO Section(course_id, semester_year, section_num, professor_id)
@@ -326,6 +332,3 @@ VALUES (1, 2),
        (5, 1),
        (8, 2),
        (7, 1);
-
-
-
