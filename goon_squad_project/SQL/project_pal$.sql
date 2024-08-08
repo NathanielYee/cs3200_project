@@ -46,7 +46,8 @@ CREATE TABLE IF NOT EXISTS Section (
                                    ON UPDATE restrict ON DELETE restrict,
     FOREIGN KEY (professor_id) REFERENCES Professor(professor_id)
                                    ON UPDATE restrict ON DELETE restrict,
-    PRIMARY KEY (course_id, semester_year, section_num)
+    PRIMARY KEY (course_id, semester_year, section_num),
+    UNIQUE (course_id, semester_year, section_num)
 );
 
 -- Project Table
@@ -75,7 +76,7 @@ CREATE TABLE IF NOT EXISTS TA (
 
 -- TA Speciality Table
 CREATE TABLE IF NOT EXISTS TASpeciality (
-    ta_id INT,
+    ta_id INT PRIMARY KEY,
     speciality_description VARCHAR(255),
     FOREIGN KEY (ta_id) REFERENCES TA(ta_id) ON UPDATE restrict ON DELETE restrict
 );
@@ -101,6 +102,9 @@ CREATE TABLE IF NOT EXISTS Submission (
     group_id INT,
     submitted_at DATETIME,
     submission_link VARCHAR(100),
+    project_id INT NOT NULL,
+    FOREIGN KEY (project_id) REFERENCES Project(project_id)
+                                      ON UPDATE restrict ON DELETE restrict,
     PRIMARY KEY (submission_id, group_id)
 );
 
@@ -114,20 +118,28 @@ CREATE TABLE IF NOT EXISTS Student (
     year INT,
     on_campus BOOLEAN,
     group_id INT,
-    section_num INT NOT NULL ,
-    semester_year VARCHAR(25) NOT NULL,
-    course_id INT NOT NULL,
-    FOREIGN KEY (group_id) REFERENCES `Group`(group_id),
-    FOREIGN KEY(course_id, semester_year, section_num) REFERENCES Section(course_id, semester_year, section_num)
-                                   ON UPDATE restrict ON DELETE restrict,
+    FOREIGN KEY (group_id) REFERENCES `Group`(group_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
     PRIMARY KEY (student_id)
 );
 
 -- Student Speciality Table
 CREATE TABLE IF NOT EXISTS StudentSpeciality (
-    student_id INT,
+    student_id INT PRIMARY KEY,
     speciality_description VARCHAR(255),
     FOREIGN KEY (student_id) REFERENCES Student(student_id) ON UPDATE restrict ON DELETE restrict
+);
+
+-- StudentSection Table
+CREATE TABLE IF NOT EXISTS StudentSection (
+    student_id INT,
+    course_id INT,
+    semester_year VARCHAR(25),
+    section_num INT,
+    FOREIGN KEY (course_id, semester_year, section_num)
+        REFERENCES Section(course_id, semester_year, section_num),
+    FOREIGN KEY (student_id)
+        REFERENCES Student(student_id),
+    PRIMARY KEY (student_id, course_id, semester_year, section_num)
 );
 
 -- Days Table (Part of Availability Composite Attribute)
@@ -179,102 +191,109 @@ CREATE TABLE IF NOT EXISTS TAAvailability (
 
 -- Department Data
 INSERT INTO Department (deptName)
-VALUES ("Computer Sciences"),
-       ("Finance"),
-       ("Chemistry");
+VALUES ('Computer Sciences'),
+       ('Finance'),
+       ('Chemistry');
 
 -- Professor Data
 INSERT INTO Professor(first_name, last_name, email, dept_id, office_location)
-VALUES ("Mark", "Fontenot", "m.fontenot@northeastern.edu", 1, "WVH 115"),
-       ("Sally", "Fields", "fields.sa@northeastern.edu", 2, "Hayden 302"),
-       ("Patrick", "Thompson", "pa.thompson@northeastern.edu", 3, "Mugar 112"),
-       ("Sara", "Klein", "s.klein@northeastern.edu", 3, "Mugar 223"),
-       ("Matt", "James", "m.james@northestern.edu", 3, "Churchill 102");
+VALUES ('Mark', 'Fontenot', 'm.fontenot@northeastern.edu', 1, 'WVH 115'),
+       ('Sally', 'Fields', 'fields.sa@northeastern.edu', 2, 'Hayden 302'),
+       ('Patrick', 'Thompson', 'pa.thompson@northeastern.edu', 3, 'Mugar 112'),
+       ('Sara', 'Klein', 's.klein@northeastern.edu', 3, 'Mugar 223'),
+       ('Matt', 'James', 'm.james@northestern.edu', 3, 'Churchill 102');
 
 -- Class Data
 INSERT INTO Class(course_name, dept_id, professor_id)
-VALUES ("Database Design", 1, 1),
-       ("Organic Chemistry", 3, 3),
-       ("Investments", 2, 2);
+VALUES ('Database Design', 1, 1),
+       ('Organic Chemistry', 3, 3),
+       ('Investments', 2, 2);
 
 -- Section Data
 INSERT INTO Section(course_id, semester_year, section_num, professor_id)
-VALUES (1, "Fall 2024", 1, 1),
-       (3, "Spring 2025", 1, 2),
-       (2, "Fall 2024", 1, 3),
-       (2, "Fall 2024", 2, 4),
-       (2, "Spring 2025", 1, 5);
+VALUES (1, 'Fall 2024', 1, 1),
+       (3, 'Spring 2025', 1, 2),
+       (2, 'Fall 2024', 1, 3),
+       (2, 'Fall 2024', 2, 4),
+       (2, 'Spring 2025', 1, 5);
 
 -- Project Data
 INSERT INTO Project(instructions, professor_id)
-VALUES ("Make a functional data-driven application and be original!", 1),
-       ("Get ready for this collaborative lab report,it is worth 50% of your grade", 3),
-       ("See the linked instructions doc for the final risk management group project", 2);
+VALUES ('Make a functional data-driven application and be original!', 1),
+       ('Get ready for this collaborative lab report,it is worth 50% of your grade', 3),
+       ('See the linked instructions doc for the final risk management group project', 2);
 
 -- TA Data
 INSERT INTO TA(first_name, last_name, email, section_num, semester_year, course_id)
-VALUES ("Timmy", "Johnson", "johnson.ti@northeastern,edu", 1, "Fall 2024", 1),
-       ("Charlotte", "Smith", "smith.ch@northeastern.edu", 1, "Fall 2024", 2),
-       ("Katie", "O'Brian", "obrian.kate@northeastern.edu", 1, "Spring 2025", 3);
+VALUES ('Timmy', 'Johnson', 'johnson.ti@northeastern,edu', 1, 'Fall 2024', 1),
+       ('Charlotte', 'Smith', 'smith.ch@northeastern.edu', 1, 'Fall 2024', 2),
+       ('Katie', 'OBrian', 'obrian.kate@northeastern.edu', 1, 'Spring 2025', 3);
 
 -- TA Specialty Data
 INSERT INTO TASpeciality(ta_id, speciality_description)
-VALUES (1, "Python, JavaScript, Object-Oriented Design, Data Analysis, React"),
-       (2, "Accounting, Risk management, investments, bond valuation, reading financial statements"),
-       (3, "wet lab experience, data analysis, organic chemistry, lab safety certified");
+VALUES (1, 'Python, JavaScript, Object-Oriented Design, Data Analysis, React'),
+       (2, 'Accounting, Risk management, investments'),
+       (3, 'wet lab experience, data analysis, organic chemistry');
 
 -- Group Data
 INSERT INTO `Group` (group_name, ta_id, section_num, semester_year, course_id)
-VALUES ("Team Green", 1, 1, "Fall 2024", 1),
-       ("WeLoveChem", 3, 1, "Spring 2025", 3),
-       ("FinanceBros", 2, 1, "Fall 2024", 2);
+VALUES ('Team Green', 1, 1, 'Fall 2024', 1),
+       ('WeLoveChem', 3, 1, 'Spring 2025', 3),
+       ('FinanceBros', 2, 1, 'Fall 2024', 2);
 
 -- Submission Data
-INSERT INTO Submission (group_id, submitted_at, submission_link)
-VALUES (1, '2024-08-16 10:45:28', 'projecturl1.com'),
-       (2, '2024-08-12 09:18:57', 'finaproject.com');
-INSERT INTO Submission (group_id, submitted_at)
-VALUES (3, '2024-09-30 06:22:30');
+INSERT INTO Submission (group_id, submitted_at, submission_link, project_id)
+VALUES (1, '2024-08-16 10:45:28', 'projecturl1.com', 1),
+       (2, '2024-08-12 09:18:57', 'finaproject.com', 2);
+INSERT INTO Submission (group_id, submitted_at, project_id)
+VALUES (3, '2024-09-30 06:22:30', 3);
 
 -- Student Data
-INSERT INTO Student(first_name, last_name, email, major, year, on_campus, group_id,
-                    section_num, semester_year, course_id)
-VALUES ("John", "Doe", "doe.jo@northeastern.edu", "Computer Science", 3, True, 1, 1, "Fall 2024", 1),
-       ("Sabrina", "Williams", "williams.sab@northeastern.edu", "Marketing", 2, False, 1, 1, "Fall 2024", 2),
-       ("Tom", "Williams", "williams.tom@northeastern.edu", "Finance", 2, False, 1, 1, "Fall 2024", 2),
-       ("Carrie", "Smith", "smith.car@northeastern.edu", "Accounting", 2, True, 1, 1, "Fall 2024", 2),
-       ("Daryl", "Candace", "candace.da@northeatern.edu", "Neuroscience", 1, True, 2, 1, "Spring 2025", 3);
+INSERT INTO Student(first_name, last_name, email, major, year, on_campus, group_id)
+VALUES ('John', 'Doe', 'doe.jo@northeastern.edu', 'Computer Science', 3, True, 1),
+       ('Sabrina', 'Williams', 'williams.sab@northeastern.edu', 'Marketing', 2, False, 1),
+       ('Tom', 'Williams', 'williams.tom@northeastern.edu', 'Finance', 2, False, 1),
+       ('Carrie', 'Smith', 'smith.car@northeastern.edu', 'Accounting', 2, True, 1),
+       ('Daryl', 'Candace', 'candace.da@northeatern.edu', 'Neuroscience', 1, True, 2);
 
 -- Student Specialty Data
 INSERT INTO StudentSpeciality(student_id, speciality_description)
-VALUES (1, "Python, Java, C++, React, Streamlit, SQL"),
-       (2, "Canva, Figma, Branding"),
-       (3, "Risk management, trading, Excel, financial accounting");
+VALUES (1, 'Python, Java, C++, React, Streamlit, SQL'),
+       (2, 'Canva, Figma, Branding'),
+       (3, 'Risk management, trading, Excel, financial accounting');
+
+-- Student Section Data
+INSERT INTO StudentSection(student_id, section_num, course_id, semester_year)
+VALUES (1, 1, 1, 'Fall 2024'),
+       (2, 1, 2, 'Fall 2024'),
+       (3, 1, 2, 'Fall 2024'),
+       (4, 1, 2, 'Fall 2024'),
+       (5, 1, 3, 'Spring 2025');
 
 -- Days Data
 INSERT INTO Days(day)
-VALUES ("Monday"),
-       ("Tuesday"),
-       ("Wednesday"),
-       ("Thursday"),
-       ("Friday"),
-       ("Saturday"),
-       ("Sunday");
+VALUES ('Monday'),
+       ('Tuesday'),
+       ('Wednesday'),
+       ('Thursday'),
+       ('Friday'),
+       ('Saturday'),
+       ('Sunday');
 
 -- Time Data
 INSERT INTO Time(time)
-VALUES ("Morning"),
-       ("Afternoon"),
-       ("Night");
+VALUES ('Morning'),
+       ('Afternoon'),
+       ('Night');
 
 -- Location Data
 INSERT INTO Location(location)
-VALUES ("Snell"),
-       ("Curry"),
-       ("ISEC"),
-       ("EXP"),
-       ("Law Libary"),
-       ("Boston Public Library");
+VALUES ('Snell'),
+       ('Curry'),
+       ('ISEC'),
+       ('EXP'),
+       ('Law Library'),
+       ('Boston Public Library');
 
 -- Availability Data
 INSERT INTO Availability(location_id, day_id, time_id)
@@ -284,7 +303,7 @@ VALUES (1, 1, 1), -- snell, monday morning
        (4, 3, 1),
        (6, 6, 2);
 INSERT INTO Availability(day_id, time_id)
-VALUES (2, 1),
+VALUES (2, 1), -- location can be null (undecided)
        (3, 2),
        (5, 1);
 
@@ -308,14 +327,5 @@ VALUES (1, 2),
        (8, 2),
        (7, 1);
 
---- example query of getting ta and student emails who are available on the same day, time, & location
-SELECT t.ta_id, t.email, s.student_id, s.email
-FROM (
-    SELECT ta.ta_id, sa.student_id
-    FROM TAAvailability ta
-    JOIN StudentAvailability sa ON ta.availability_id = sa.availability_id
-) AS availability_data
-JOIN TA t ON t.ta_id = availability_data.ta_id
-JOIN Student s ON s.student_id = availability_data.student_id;
 
 
